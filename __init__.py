@@ -8,6 +8,7 @@ def metadata(file):
     "Read the metadata for file `file` from file.yaml."
     f = open(file, "r")
     contents = f.read()
+    f.close()
     # get everything within comments that look like:
     # <!-- metadata
     # -->
@@ -16,7 +17,9 @@ def metadata(file):
     if commented == contents: 
         raise ControllerError("Post '%s' has no commented metadata." %(file))
     meta = yaml.load(commented)
-    f.close()
+    # raise an error if there's no title in the metadata
+    if "title" not in meta.keys():
+        raise ControllerError("Post '%s' doesn't have a title in its metadata." %(file))
     return meta
 
 class Post(object):

@@ -30,12 +30,11 @@ class Post(object):
     def __init__(self, path):
         self.path = path
         self.contents = None
-        # get metadata
-        meta = metadata(self.path) 
-        # The following are to be deduced somehow from metadata
-        self.date = meta["date"]
+        # get metadata, and update this object's attributes with it. 
+        # This allows the user to have arbitrary, custom fields further than "title" and "date".
+        self.__dict__.update(metadata(self.path))
+        # Get some things from the metadata
         self.year, self.month, self.day = map(int, self.date.split("/"))
-        self.title = meta["title"]
         self.slug = self.title.replace(" ", "-")
         self.url = "%d/%d/%s.html" %(self.year, self.month, self.slug)
         # Interpret the file.

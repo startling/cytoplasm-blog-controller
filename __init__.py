@@ -21,6 +21,13 @@ class Post(object):
         self.contents = s 
 
 class BlogController(cytoplasm.controllers.Controller):
+    def __init__(self, data, destination, templates="_templates/"):
+        # take three arguments: the source directory, the destination directory, and, optionally,
+        # a directory wherein the templates reside.
+        self.data_directory = data
+        self.destination_directory = destination
+        self.templates_directory = templates
+        
     def __call__(self):
         for post in os.listdir(self.data_directory):
             this_post = Post("%s/%s" %(self.data_directory, post))

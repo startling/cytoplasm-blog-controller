@@ -20,6 +20,9 @@ def metadata(file):
     # raise an error if there's no title in the metadata
     if "title" not in meta.keys():
         raise ControllerError("Post '%s' doesn't have a title in its metadata." %(file))
+    # raise an error if there's no date in the metadata:
+    if "date" not in meta.keys():
+        raise ControllerError("Post '%s' doesn't have a date in its metadata." %(file))
     return meta
 
 class Post(object):

@@ -1,4 +1,5 @@
 import os, cytoplasm, yaml
+from operator import attrgetter
 from cytoplasm.interpreters import interpret
 
 def metadata(file):
@@ -17,8 +18,10 @@ class Post(object):
         meta = metadata(self.path) 
         # The following are to be deduced somehow from metadata
         self.date = meta["date"]
+        self.year, self.month, self.day = map(int, self.date.split("/"))
         self.title = meta["title"]
         self.slug = self.title.replace(" ", "-")
+        self.url = "%d/%d/%s.html" %(self.year, self.month, self.slug)
         # Interpret the file.
         interpret(self.path, self)
 
@@ -44,6 +47,8 @@ class BlogController(cytoplasm.controllers.Controller):
         post_template = "%s/%s" %(self.templates_directory, "post.mako")
         chronological_template = "%s/%s" %(self.templates_directory, "chronological.mako")
         def chronological(directory, posts):
+            # sort posts by the year, then month, then day, with the most recent first.
+            posts.sort(key=attrgetter('year', 'month', 'day'), reverse=True)
             # the number of pages
             number = len(posts) // self.posts_per_page
             # if there are any remainders, add another page for them.

@@ -24,12 +24,14 @@ class BlogController(cytoplasm.controllers.Controller):
     def __init__(self, data, destination, templates="_templates/"):
         # take three arguments: the source directory, the destination directory, and, optionally,
         # a directory wherein the templates reside.
-        self.data_directory = data
-        self.destination_directory = destination
         self.templates_directory = templates
+        cytoplasm.controllers.Controller.__init__(self, data, destination)
         
     def __call__(self):
+        post_template = "%s/%s" %(self.templates_directory, "post.mako")
         for post in os.listdir(self.data_directory):
             this_post = Post("%s/%s" %(self.data_directory, post))
+            destination = "%s/%s" %(self.destination_directory, "post.html")
+            cytoplasm.interpreters.interpret(post_template, destination, post=this_post)
 
 info = { "class" : BlogController }

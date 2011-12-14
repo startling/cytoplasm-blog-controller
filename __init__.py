@@ -32,7 +32,7 @@ class Post(object):
         self.contents = s 
 
 class BlogController(cytoplasm.controllers.Controller):
-    def __init__(self, data, destination, posts_per_page=10, templates="_templates/"):
+    def __init__(self, data, destination, templates="_templates", posts_per_page=10):
         # take three arguments: the source directory, the destination directory, and, optionally,
         # a directory wherein the templates reside and a number of posts per page.
         self.templates_directory = templates
@@ -44,8 +44,25 @@ class BlogController(cytoplasm.controllers.Controller):
         post_template = "%s/%s" %(self.templates_directory, "post.mako")
         chronological_template = "%s/%s" %(self.templates_directory, "chronological.mako")
         def chronological(directory, posts):
-            destination = "%s/index.html" %(directory)
-            interpret(chronological_template, destination, posts=posts, next=None, previous=None)
+            # the number of pages
+            number = len(posts) // self.posts_per_page
+            # if there are any remainders, add another page for them.
+            if number * self.posts_per_page < len(posts): number += 1
+            # make the pages:
+            for n in range(number):
+                # if this is the first page, name it "index.html"
+                if n == 0: name = "%s/index.html" %(directory)
+                else: name = "%s/%d.html" %(directory, n)
+                # if this isn't page 0, previous should link to the page before
+                if n == 0: prev = None
+                elif n == 1: prev = "index.html"
+                else: prev = "%d.html" %(directory, n - 1)
+                # if this isn't the last page, next should link to the next page...
+                if n == number - 1: next = None
+                else: next = "%d.html" %(n + 1)
+                # slice the list of posts according to how many should be on this page
+                p = posts[n * self.posts_per_page:(n + 1) * self.posts_per_page]
+                interpret(chronological_template, name, posts=p, next=next, previous=prev)
         
         for post in [p for p in os.listdir(self.data_directory) if not p.endswith(".yaml")]:
             this_post = Post("%s/%s" %(self.data_directory, post))

@@ -2,16 +2,21 @@ import os, cytoplasm, yaml, re
 from operator import attrgetter
 from collections import defaultdict
 from cytoplasm.interpreters import interpret
+from cytoplasm.errors import ControllerError
 
 def metadata(file):
     "Read the metadata for file `file` from file.yaml."
     f = open(file, "r")
+    contents = f.read()
     # get everything within comments that look like:
     # <!-- metadata
     # -->
-    commented = re.sub(r'<!-- metadata\n(.*?)\n-->.*', r'\1', f.read(), flags=re.DOTALL)
+    commented = re.sub(r'<!-- metadata\n(.*?)\n-->.*', r'\1', contents, flags=re.DOTALL)
+    # if there's no difference between the contents of the file and `commented`, raise an error.
+    if commented == contents: 
+        raise ControllerError("Post '%s' has no commented metadata." %(file))
     meta = yaml.load(commented)
-    f.close
+    f.close()
     return meta
 
 class Post(object):

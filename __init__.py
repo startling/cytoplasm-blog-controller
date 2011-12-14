@@ -1,13 +1,23 @@
-import os, cytoplasm 
+import os, cytoplasm, yaml
+
+def metadata(file):
+    "Read the metadata for file `file` from file.yaml."
+    f = open("%s.yaml" %(file), "r")
+    meta = yaml.load(f)
+    f.close
+    return meta
 
 class Post(object):
     "A sort-of file-like object that defines a post."
     def __init__(self, path):
         self.path = path
-        # The following are to be deduced somehow from metadata; they don't do anything yet.
-        self.date = None
         self.contents = None
-        self.title = None
+        # get metadata
+        meta = metadata(self.path) 
+        # The following are to be deduced somehow from metadata
+        self.date = meta["date"]
+        self.title = meta["title"]
+        self.slug = self.title.replace(" ", "-")
         # Interpret the file.
         cytoplasm.interpreters.interpret(self.path, self)
 
@@ -29,9 +39,9 @@ class BlogController(cytoplasm.controllers.Controller):
         
     def __call__(self):
         post_template = "%s/%s" %(self.templates_directory, "post.mako")
-        for post in os.listdir(self.data_directory):
+        for post in [p for p in os.listdir(self.data_directory) if not p.endswith(".yaml")]:
             this_post = Post("%s/%s" %(self.data_directory, post))
-            destination = "%s/%s" %(self.destination_directory, "post.html")
+            destination = "%s/%s" %(self.destination_directory, "%s.html" %(this_post.slug))
             cytoplasm.interpreters.interpret(post_template, destination, post=this_post)
 
 info = { "class" : BlogController }

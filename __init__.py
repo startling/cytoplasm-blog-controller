@@ -1,12 +1,16 @@
-import os, cytoplasm, yaml
+import os, cytoplasm, yaml, re
 from operator import attrgetter
 from collections import defaultdict
 from cytoplasm.interpreters import interpret
 
 def metadata(file):
     "Read the metadata for file `file` from file.yaml."
-    f = open("%s.yaml" %(file), "r")
-    meta = yaml.load(f)
+    f = open(file, "r")
+    # get everything within comments that look like:
+    # <!-- metadata
+    # -->
+    commented = re.sub(r'<!-- metadata\n(.*?)\n-->.*', r'\1', f.read(), flags=re.DOTALL)
+    meta = yaml.load(commented)
     f.close
     return meta
 
@@ -72,7 +76,7 @@ class BlogController(cytoplasm.controllers.Controller):
                 p = posts[n * self.posts_per_page:(n + 1) * self.posts_per_page]
                 interpret(chronological_template, name, posts=p, next=next, previous=prev)
         
-        for post in [p for p in os.listdir(self.data_directory) if not p.endswith(".yaml")]:
+        for post in os.listdir(self.data_directory):
             # instantiate the Post object
             this_post = Post("%s/%s" %(self.data_directory, post))
             # figure out where the final version of this post should go

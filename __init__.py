@@ -34,7 +34,7 @@ class Post(object):
         # This allows the user to have arbitrary, custom fields further than "title" and "date".
         self.__dict__.update(metadata(self.path))
         # Get some things from the metadata
-        self.year, self.month, self.day = map(int, self.date.split("/"))
+        self.year, self.month, self.day = [int(n) for n in self.date.split("/")]
         self.slug = self.title.replace(" ", "-")
         self.url = "%d/%d/%s.html" %(self.year, self.month, self.slug)
         # Interpret the file.

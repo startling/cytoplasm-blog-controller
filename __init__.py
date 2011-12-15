@@ -47,7 +47,7 @@ class Post(object):
 
     def write(self, s):
         # instead of writing to disk, simply change the contents attribute.
-        self.contents = s 
+        self.contents = s.decode() 
 
 class BlogController(cytoplasm.controllers.Controller):
     def __init__(self, data, destination, templates="_templates", posts_per_page=10):

@@ -51,11 +51,10 @@ class Post(object):
 
 class BlogController(cytoplasm.controllers.Controller):
     def __init__(self, data, destination, templates="_templates", posts_per_page=10):
-        # take three arguments: the source directory, the destination directory, and, optionally,
-        # a directory wherein the templates reside and a number of posts per page.
-        self.templates_directory = templates
+        # take the base arguments for a controller and, optinally, the number of posts per page.
         self.posts_per_page = posts_per_page
-        cytoplasm.controllers.Controller.__init__(self, data, destination)
+        # pass the base arguments to the base controller's __init__
+        cytoplasm.controllers.Controller.__init__(self, data, destination, templates)
         
     def __call__(self):
         posts = []

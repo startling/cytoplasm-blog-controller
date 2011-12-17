@@ -57,12 +57,15 @@ class BlogController(cytoplasm.controllers.Controller):
         cytoplasm.controllers.Controller.__init__(self, data, destination, templates)
         
     def __call__(self):
-        posts = []
-        years = defaultdict(list)
-        months = defaultdict(list)
+        # this is a dictionary where the values are lists of Post objects and the keys are the 
+        # directories where those posts should go. For example, divisions["2011"] will have all
+        # the things posted in 2011. There will be months, too, like divisions["2011/12"]. 
+        # Everything will be in divisions[""].
+        divisions = defaultdict(list)
         post_template = "%s/%s" %(self.templates_directory, "post.mako")
         chronological_template = "%s/%s" %(self.templates_directory, "chronological.mako")
         def chronological(directory, posts):
+            directory = "%s/%s" %(self.destination_directory, directory)
             # sort posts by the year, then month, then day, with the most recent first.
             posts.sort(key=attrgetter('year', 'month', 'day'), reverse=True)
             # the number of pages
@@ -85,30 +88,25 @@ class BlogController(cytoplasm.controllers.Controller):
                 p = posts[n * self.posts_per_page:(n + 1) * self.posts_per_page]
                 interpret(chronological_template, name, posts=p, next=next, previous=prev)
         
-        for post in os.listdir(self.data_directory):
+        for file in os.listdir(self.data_directory):
             # instantiate the Post object
-            this_post = Post("%s/%s" %(self.data_directory, post))
+            post = Post("%s/%s" %(self.data_directory, file))
             # figure out where the final version of this post should go
-            destination = "%s/%s" %(self.destination_directory, this_post.url)
+            destination = "%s/%s" %(self.destination_directory, post.url)
             # make the year and month directories, if they don't exist:
-            yeardir = "%s/%d" %(self.destination_directory, this_post.year)
+            yeardir = "%s/%d" %(self.destination_directory, post.year)
             if not os.path.exists(yeardir): os.mkdir(yeardir)
-            monthdir = "%s/%d/%d" %(self.destination_directory, this_post.year, this_post.month)
+            monthdir = "%s/%d/%d" %(self.destination_directory, post.year, post.month)
             if not os.path.exists(monthdir): os.mkdir(monthdir)
             # interpret the post
-            interpret(post_template, destination, post=this_post)
+            interpret(post_template, destination, post=post)
             # append it to the grand list of posts
-            posts.append(this_post)
-            # append it to the lists for each year and month
-            years[this_post.year].append(this_post)
-            months["%d/%d" %(this_post.year, this_post.month)].append(this_post)
-        # make the base chronological pages
-        chronological(self.destination_directory, posts)
-        # make chronological pages for each year...
-        for year in years.keys(): 
-            chronological("%s/%d" %(self.destination_directory, year), years[year])
-        # and for each month
-        for month in months.keys(): 
-            chronological("%s/%s" %(self.destination_directory, month), months[month])
+            divisions[""].append(post)
+            # append it to the list of posts for its year and month.
+            divisions[str(post.year)].append(post)
+            divisions["%d/%d" %(post.year, post.month)].append(post)
+        # for each of the keys in divisions, make chronological pages for that directory.
+        for directory in divisions.keys():
+            chronological(directory, divisions[directory])
 
 info = { "class" : BlogController }

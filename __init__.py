@@ -64,7 +64,22 @@ class BlogController(cytoplasm.controllers.Controller):
         divisions = defaultdict(list)
         post_template = "%s/%s" %(self.templates_directory, "post.mako")
         chronological_template = "%s/%s" %(self.templates_directory, "chronological.mako")
-        def chronological(directory, posts):
+        for file in os.listdir(self.data_directory):
+            # instantiate the Post object
+            post = Post("%s/%s" %(self.data_directory, file))
+            # append it to the grand list of posts
+            divisions[""].append(post)
+            # append it to the list of posts for its year and month.
+            divisions[str(post.year)].append(post)
+            divisions["%d/%d" %(post.year, post.month)].append(post)
+        # for each of the keys in divisions, make chronological pages for that directory.
+        # (this is sorted so that, for example, "2011" goes before "2011/12". If it weren't sorted,
+        # you'd get an error because the directory "2011/12" can't be created before the directory
+        # "2011".)
+        for directory in sorted(divisions.keys()):
+            # get the list of posts
+            posts = divisions[directory]
+            # get the real directory by prepending the destination_directory
             directory = "%s/%s" %(self.destination_directory, directory)
             # if the directory doesn't exist, create it.
             if not os.path.exists(directory): os.mkdir(directory)
@@ -89,22 +104,6 @@ class BlogController(cytoplasm.controllers.Controller):
                 # slice the list of posts according to how many should be on this page
                 p = posts[n * self.posts_per_page:(n + 1) * self.posts_per_page]
                 interpret(chronological_template, name, posts=p, next=next, previous=prev)
-        
-        for file in os.listdir(self.data_directory):
-            # instantiate the Post object
-            post = Post("%s/%s" %(self.data_directory, file))
-            # append it to the grand list of posts
-            divisions[""].append(post)
-            # append it to the list of posts for its year and month.
-            divisions[str(post.year)].append(post)
-            divisions["%d/%d" %(post.year, post.month)].append(post)
-        # for each of the keys in divisions, make chronological pages for that directory.
-        # (this is sorted so that, for example, "2011" goes before "2011/12". If it weren't sorted,
-        # you'd get an error because the directory "2011/12" can't be created before the directory
-        # "2011".
-        for directory in sorted(divisions.keys()):
-            chronological(directory, divisions[directory])
-        
         # for each of the posts, apply the mako template and write it to a file.
         for post in divisions[""]:
             destination = "%s/%s" %(self.destination_directory, post.url)

@@ -30,6 +30,8 @@ class Post(object):
     def __init__(self, path):
         self.path = path
         self.contents = None
+        # an empty list for tags; this way, if they aren't in the metadata, it defaults to this.
+        self.tags = []
         # get metadata, and update this object's attributes with it. 
         # This allows the user to have arbitrary, custom fields further than "title" and "date".
         self.__dict__.update(metadata(self.path))
@@ -72,6 +74,9 @@ class BlogController(cytoplasm.controllers.Controller):
             # append it to the list of posts for its year and month.
             divisions[str(post.year)].append(post)
             divisions["%d/%d" %(post.year, post.month)].append(post)
+            # append the post to a division for each of its tags
+            for tag in post.tags:
+                divisions[tag].append(post)
         # for each of the keys in divisions, make chronological pages for that directory.
         # (this is sorted so that, for example, "2011" goes before "2011/12". If it weren't sorted,
         # you'd get an error because the directory "2011/12" can't be created before the directory

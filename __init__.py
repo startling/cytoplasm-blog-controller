@@ -66,6 +66,8 @@ class BlogController(cytoplasm.controllers.Controller):
         chronological_template = "%s/%s" %(self.templates_directory, "chronological.mako")
         def chronological(directory, posts):
             directory = "%s/%s" %(self.destination_directory, directory)
+            # if the directory doesn't exist, create it.
+            if not os.path.exists(directory): os.mkdir(directory)
             # sort posts by the year, then month, then day, with the most recent first.
             posts.sort(key=attrgetter('year', 'month', 'day'), reverse=True)
             # the number of pages
@@ -91,22 +93,22 @@ class BlogController(cytoplasm.controllers.Controller):
         for file in os.listdir(self.data_directory):
             # instantiate the Post object
             post = Post("%s/%s" %(self.data_directory, file))
-            # figure out where the final version of this post should go
-            destination = "%s/%s" %(self.destination_directory, post.url)
-            # make the year and month directories, if they don't exist:
-            yeardir = "%s/%d" %(self.destination_directory, post.year)
-            if not os.path.exists(yeardir): os.mkdir(yeardir)
-            monthdir = "%s/%d/%d" %(self.destination_directory, post.year, post.month)
-            if not os.path.exists(monthdir): os.mkdir(monthdir)
-            # interpret the post
-            interpret(post_template, destination, post=post)
             # append it to the grand list of posts
             divisions[""].append(post)
             # append it to the list of posts for its year and month.
             divisions[str(post.year)].append(post)
             divisions["%d/%d" %(post.year, post.month)].append(post)
         # for each of the keys in divisions, make chronological pages for that directory.
-        for directory in divisions.keys():
+        # (this is sorted so that, for example, "2011" goes before "2011/12". If it weren't sorted,
+        # you'd get an error because the directory "2011/12" can't be created before the directory
+        # "2011".
+        for directory in sorted(divisions.keys()):
             chronological(directory, divisions[directory])
+        
+        # for each of the posts, apply the mako template and write it to a file.
+        for post in divisions[""]:
+            destination = "%s/%s" %(self.destination_directory, post.url)
+            # interpret the post
+            interpret(post_template, destination, post=post)
 
 info = { "class" : BlogController }

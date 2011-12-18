@@ -55,7 +55,7 @@ class BlogController(cytoplasm.controllers.Controller):
     def __init__(self, data, destination, templates="_templates", posts_per_page=10):
         # take the base arguments for a controller and, optinally, the number of posts per page.
         self.posts_per_page = posts_per_page
-        # pass the base arguments to the base controller's __init__
+    # pass the base arguments to the base controller's __init__
         cytoplasm.controllers.Controller.__init__(self, data, destination, templates)
         
     def __call__(self):
@@ -114,5 +114,14 @@ class BlogController(cytoplasm.controllers.Controller):
             destination = "%s/%s" %(self.destination_directory, post.url)
             # interpret the post
             interpret(post_template, destination, post=post)
+        # finally, for each of the templates in the templates/feeds directory, give them the posts.
+        feed_dir = "%s/%s" %(self.templates_directory, "feeds")
+        if os.path.exists(feed_dir):
+            for feed in (os.listdir(feed_dir)):
+                # save the output to the name of the file without the last suffix
+                destination = "%s/%s" %(self.destination_directory, ".".join(feed.split(".")[:-1]))
+                # interpret this template, given the list of posts
+                interpret("%s/%s" %(feed_dir, feed), destination, posts=divisions[""])
+
 
 info = { "class" : BlogController }

@@ -32,6 +32,9 @@ class Post(object):
         self.contents = None
         # an empty list for tags; this way, if they aren't in the metadata, it defaults to this.
         self.tags = []
+        # default to None for author and email
+        self.author = None
+        self.email = None
         # get metadata, and update this object's attributes with it. 
         # This allows the user to have arbitrary, custom fields further than "title" and "date".
         self.__dict__.update(metadata(self.path))

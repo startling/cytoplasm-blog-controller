@@ -1,4 +1,4 @@
-import os, cytoplasm, yaml, re
+import os, cytoplasm, yaml, re, datetime
 from operator import attrgetter
 from collections import defaultdict
 from cytoplasm.interpreters import interpret
@@ -39,6 +39,8 @@ class Post(object):
         self.year, self.month, self.day = [int(n) for n in self.date.split("/")]
         self.slug = self.title.replace(" ", "-")
         self.url = "%d/%d/%s.html" %(self.year, self.month, self.slug)
+        # a datetime object
+        self.datetime = datetime.datetime(self.year, self.month, self.day)
         # Interpret the file.
         interpret(self.path, self)
 

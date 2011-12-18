@@ -22,9 +22,9 @@
         <link>${url}${post.url}</link>
         <guid>${url}${post.url}</guid>
         <pubDate> ${timestamp(post.datetime)} </pubDate>
-        <content:encoded><![CDATA[
+        <description>
 ${post.contents}
-        ]]></content>
+        </description>
     </item>
 % endfor
 </channel>

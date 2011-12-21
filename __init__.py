@@ -28,22 +28,24 @@ def metadata(file):
 class Post(object):
     "A sort-of file-like object that defines a post."
     def __init__(self, path):
+        # the source file of the post
         self.path = path
+        # instantiate these attributes, so they default to None.
         self.contents = None
-        # an empty list for tags; this way, if they aren't in the metadata, it defaults to this.
-        self.tags = []
-        # default to None for author and email
         self.author = None
         self.email = None
-        # get metadata, and update this object's attributes with it. 
-        # This allows the user to have arbitrary, custom fields further than "title" and "date".
+        # an empty list for tags; this way, if they aren't in the metadata, it defaults to this.
+        self.tags = []
+        # Read the metadata from this file and update this objects __dict__ with it;
+        # this allows the user to have arbitrary, custom fields further than "title" and "date".
         self.__dict__.update(metadata(self.path))
-        # Get some things from the metadata
         # get a datetime object from the "date" metadata
         self.date = datetime.datetime.strptime(self.date, "%Y/%m/%d")
         # get these to be nice...
         self.year, self.month, self.day = self.date.year, self.date.month, self.date.day
+        # This is a whitespace-free version of the name, to be used in things like filenames.
         self.slug = self.title.replace(" ", "-")
+        # this is the relative url for the post, relative from the destination directory:
         self.url = "%d/%d/%s.html" %(self.year, self.month, self.slug)
         # Interpret the file.
         interpret(self.path, self)
@@ -54,7 +56,7 @@ class Post(object):
         pass
 
     def write(self, s):
-        # instead of writing to disk, simply change the contents attribute.
+        # instead of writing to disk when this is written to , simply change the contents attribute.
         self.contents = s.decode("utf8") 
 
 class BlogController(cytoplasm.controllers.Controller):

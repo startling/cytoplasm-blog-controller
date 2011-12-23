@@ -12,11 +12,12 @@ def metadata(file):
     # get everything within comments that look like:
     # <!-- metadata
     # -->
-    commented = re.sub(r'<!-- metadata\n(.*?)\n-->.*', r'\1', contents, flags=re.DOTALL)
-    # if there's no difference between the contents of the file and `commented`, raise an error.
-    if commented == contents: 
+    commented = re.match(r'<!-- metadata\n(.*?)\n-->.*', contents, flags=re.DOTALL)
+    # if there's no match, raise an error.
+    if commented == None: 
         raise ControllerError("Post '%s' has no commented metadata." %(file))
-    meta = yaml.load(commented)
+    # otherwise, get yaml data from the first matching group (there should be only one anyway).
+    meta = yaml.load(commented.group(1))
     # raise an error if there's no title in the metadata
     if "title" not in meta.keys():
         raise ControllerError("Post '%s' doesn't have a title in its metadata." %(file))

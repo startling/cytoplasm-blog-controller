@@ -31,7 +31,7 @@
     % endif
         <link href="${url}${post.url}" type="text/html" />
         <id>${url}${post.url}</id>
-        <updated>${isoformat(post.datetime)}</updated>
+        <updated>${isoformat(post.date)}</updated>
         <content type="html"><![CDATA[
 ${post.contents}
     ]]></content>

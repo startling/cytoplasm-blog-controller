@@ -73,8 +73,9 @@ class BlogController(cytoplasm.controllers.Controller):
         # the things posted in 2011. There will be months, too, like divisions["2011/12"]. 
         # Everything will be in divisions[""].
         divisions = defaultdict(list)
-        post_template = "%s/%s" %(self.templates_directory, "post.mako")
-        chronological_template = "%s/%s" %(self.templates_directory, "chronological.mako")
+        # figure out the templates to use:
+        post_template = self.template("post")
+        chronological_template = self.template("chronological")
         for file in os.listdir(self.data_directory):
             # instantiate the Post object
             post = Post("%s/%s" %(self.data_directory, file))

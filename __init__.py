@@ -47,7 +47,7 @@ class Post(object):
         # This is a whitespace-free version of the name, to be used in things like filenames.
         self.slug = self.title.replace(" ", "-")
         # this is the relative url for the post, relative from the destination directory:
-        self.url = "%d/%d/%s.html" %(self.year, self.month, self.slug)
+        self.url = os.path.join(str(self.year), str(self.month), self.slug)
         # Interpret the file.
         interpret(self.path, self)
 
@@ -78,12 +78,12 @@ class BlogController(cytoplasm.controllers.Controller):
         chronological_template = self.template("chronological")
         for file in os.listdir(self.data_directory):
             # instantiate the Post object
-            post = Post("%s/%s" %(self.data_directory, file))
+            post = Post(os.path.join(self.data_directory, file))
             # append it to the grand list of posts
             divisions[""].append(post)
             # append it to the list of posts for its year and month.
             divisions[str(post.year)].append(post)
-            divisions["%d/%d" %(post.year, post.month)].append(post)
+            divisions[os.path.join(str(post.year), str(post.month))].append(post)
             # append the post to a division for each of its tags
             for tag in post.tags:
                 divisions[tag].append(post)
@@ -95,7 +95,7 @@ class BlogController(cytoplasm.controllers.Controller):
             # get the list of posts
             posts = divisions[directory]
             # get the real directory by prepending the destination_directory
-            directory = "%s/%s" %(self.destination_directory, directory)
+            directory = os.path.join(self.destination_directory, directory)
             # if the directory doesn't exist, create it.
             if not os.path.exists(directory): os.mkdir(directory)
             # sort posts by the year, then month, then day, with the most recent first.
@@ -107,8 +107,8 @@ class BlogController(cytoplasm.controllers.Controller):
             # make the pages:
             for n in range(number):
                 # if this is the first page, name it "index.html"
-                if n == 0: name = "%s/index.html" %(directory)
-                else: name = "%s/%d.html" %(directory, n)
+                if n == 0: name = os.path.join(directory, "index.html")
+                else: name = os.path.join("%s", "%d.html" %(directory, n))
                 # if this isn't page 0, previous should link to the page before
                 if n == 0: prev = None
                 elif n == 1: prev = "index.html"
@@ -121,17 +121,17 @@ class BlogController(cytoplasm.controllers.Controller):
                 interpret(chronological_template, name, posts=p, next=next, previous=prev)
         # for each of the posts, apply the mako template and write it to a file.
         for post in divisions[""]:
-            destination = "%s/%s" %(self.destination_directory, post.url)
+            destination = os.path.join(self.destination_directory, post.url)
             # interpret the post
             interpret(post_template, destination, post=post)
         # finally, for each of the templates in the templates/feeds directory, give them the posts.
-        feed_dir = "%s/%s" %(self.templates_directory, "feeds")
+        feed_dir = os.path.join(self.templates_directory, "feeds")
         if os.path.exists(feed_dir):
             for feed in (os.listdir(feed_dir)):
                 # save the output to the name of the file without the last suffix
-                destination = "%s/%s" %(self.destination_directory, ".".join(feed.split(".")[:-1]))
+                destination = os.path.join(self.destination_directory, ".".join(feed.split(".")[:-1]))
                 # interpret this template, given the list of posts
-                interpret("%s/%s" %(feed_dir, feed), destination, posts=divisions[""])
+                interpret(os.path.join(feed_dir, feed), destination, posts=divisions[""])
 
 
 info = { "class" : BlogController }

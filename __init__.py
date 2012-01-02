@@ -1,7 +1,7 @@
 import os, cytoplasm, yaml, re, datetime
 from operator import attrgetter
 from collections import defaultdict
-from cytoplasm.interpreters import interpret
+from cytoplasm.interpreters import interpret, interpret_to_filelike
 from cytoplasm.errors import ControllerError
 
 def metadata(file):
@@ -49,7 +49,7 @@ class Post(object):
         # this is the relative url for the post, relative from the destination directory:
         self.url = os.path.join(str(self.year), str(self.month), self.slug)
         # Interpret the file.
-        interpret(self.path, self)
+        interpret_to_filelike(self.path, self)
 
     def close(self):
         # This is just here so that python doesn't throw up an error when something else thinks

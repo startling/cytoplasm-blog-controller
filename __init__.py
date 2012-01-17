@@ -63,7 +63,8 @@ class Post(object):
         self.slug = self.title.replace(" ", "-")
         # this is the relative url for the post, relative from the destination
         # directory:
-        self.url = os.path.join(str(self.year), str(self.month), self.slug)
+        self.url = os.path.join(str(self.year), str(self.month), self.slug + 
+                ".html")
         # Interpret the file.
         interpret_to_filelike(self.path, self)
 

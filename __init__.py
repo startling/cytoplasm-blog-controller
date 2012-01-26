@@ -144,7 +144,7 @@ class BlogController(cytoplasm.controllers.Controller):
                 if n == 0:
                     name = os.path.join(directory, "index.html")
                 else:
-                    name = os.path.join("%s", "%d.html" % (directory, n))
+                    name = os.path.join("%s" % directory, "%d.html" % n)
                 # if this isn't page 0, previous should link previous page.
                 if n == 0:
                     prev = None

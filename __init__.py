@@ -151,7 +151,7 @@ class BlogController(cytoplasm.controllers.Controller):
                 elif n == 1:
                     prev = "index.html"
                 else:
-                    prev = "%d.html" % (directory, n - 1)
+                    prev = "%d.html" % (n - 1)
                 # if this isn't the last, next should link to the next page.
                 if n == number - 1:
                     next = None

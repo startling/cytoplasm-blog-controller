@@ -45,6 +45,7 @@ class Post(object):
         self.contents = None
         self.author = None
         self.email = None
+        self.slug = None
         # an empty list for tags; this way, if they aren't in the metadata,
         # it defaults to this.
         self.tags = []
@@ -63,7 +64,10 @@ class Post(object):
         self.day = self.date.day
         # This is a whitespace-free version of the name, to be used in things
         # like filenames.
-        self.slug = self.title.replace(" ", "-")
+        if self.slug == None:
+            # if the slug != None, then the user has defined it in the metadata
+            # and we should not override it.
+            self.slug = self.title.replace(" ", "-")
         # this is the relative url for the post, relative from the destination
         # directory:
         self.url = os.path.join(str(self.year), str(self.month), self.slug + 

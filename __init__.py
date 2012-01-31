@@ -3,6 +3,7 @@ import yaml
 import re
 import datetime
 import cytoplasm
+import urllib
 from StringIO import StringIO
 from operator import attrgetter
 from collections import defaultdict
@@ -67,7 +68,7 @@ class Post(object):
         if self.slug == None:
             # if the slug != None, then the user has defined it in the metadata
             # and we should not override it.
-            self.slug = self.title.replace(" ", "-")
+            self.slug = urllib.quote(self.title.replace(" ", "-"))
         # this is the relative url for the post, relative from the destination
         # directory:
         self.url = os.path.join(str(self.year), str(self.month), self.slug + 

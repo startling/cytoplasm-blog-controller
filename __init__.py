@@ -62,6 +62,7 @@ class Post(object):
         # get these to be nice...
         self.year = self.date.year
         self.month = self.date.month
+        self.monthname = self.date.strftime("%B")
         self.day = self.date.day
         # This is a whitespace-free version of the name, to be used in things
         # like filenames.
@@ -153,8 +154,10 @@ class BlogController(cytoplasm.controllers.Controller):
                 # if this isn't page 0, previous should link previous page.
                 if n == 0:
                     prev = None
+                    page_number = 1
                 elif n == 1:
                     prev = "index.html"
+                    page_number = n + 1
                 else:
                     prev = "%d.html" % (n - 1)
                 # if this isn't the last, next should link to the next page.
@@ -167,7 +170,7 @@ class BlogController(cytoplasm.controllers.Controller):
                 p = posts[n * self.posts_per_page:(n + 1) *
                             self.posts_per_page]
                 interpret(chronological_template, name, posts=p, next=next,
-                            previous=prev)
+                            previous=prev, total_pages=number, page_number=page_number)
         # for each of the posts, apply the mako template and write it to a
         # file.
         for post in divisions[""]:

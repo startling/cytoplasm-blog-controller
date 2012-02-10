@@ -109,6 +109,9 @@ class BlogController(cytoplasm.controllers.Controller):
         # There will be months, too, like divisions["2011/12"].
         # Everything will be in divisions[""].
         divisions = defaultdict(list)
+        # create an archive for chronological pages
+        # archive keys are years and values are lists of months
+        archive = {}
         # figure out the templates to use:
         post_template = self.template("post")
         chronological_template = self.template("chronological")
@@ -121,6 +124,11 @@ class BlogController(cytoplasm.controllers.Controller):
             divisions[str(post.year)].append(post)
             divisions[os.path.join(str(post.year), str(post.month))].append(
                                                                         post)
+            # populate archive
+            if not post.year in archive:
+                archive[post.year] = []
+            if not post.month in archive[post.year]:
+                archive[post.year].append(post.month)
             # append the post to a division for each of its tags
             for tag in post.tags:
                 divisions[tag].append(post)
@@ -170,7 +178,8 @@ class BlogController(cytoplasm.controllers.Controller):
                 p = posts[n * self.posts_per_page:(n + 1) *
                             self.posts_per_page]
                 interpret(chronological_template, name, posts=p, next=next,
-                            previous=prev, total_pages=number, page_number=page_number)
+                          previous=prev, total_pages=number, page_number=page_number,
+                          archive=archive)
         # for each of the posts, apply the mako template and write it to a
         # file.
         for post in divisions[""]:

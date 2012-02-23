@@ -1,95 +1,11 @@
-import os
-import yaml
-import re
-import datetime
+# -*- Coding: utf-8 -*-
+
 import cytoplasm
-import urllib
-from StringIO import StringIO
+import os
 from operator import attrgetter
 from collections import defaultdict
-from cytoplasm.interpreters import interpret, interpret_filelike
-from cytoplasm.errors import ControllerError
-
-
-def metadata(file):
-    "Read the metadata for file `file` from file.yaml."
-    with open(file, "r") as f:
-        contents = f.read()
-    # get everything that looks like:
-    # some_stuff: thing
-    #
-    # contents
-    separated = re.match(r'(.+?\:.+?)\n\n(.*)', contents, flags=re.DOTALL)
-    # if there's no match, raise an error.
-    if separated == None:
-        raise ControllerError("Post '%s' has no commented metadata." % (file))
-    # otherwise, get yaml data from the first matching group (there should be
-    # only one anyway).
-    meta = yaml.load(separated.group(1))
-    # raise an error if there's no title in the metadata
-    if "title" not in meta.keys():
-        raise ControllerError("Post '%s' doesn't have a title in its metadata."
-                % (file))
-    # raise an error if there's no date in the metadata:
-    if "date" not in meta.keys():
-        raise ControllerError("Post '%s' doesn't have a date in its metadata."
-                % (file))
-    return meta, separated.group(2)
-
-
-class Post(object):
-    "A sort-of file-like object that defines a post."
-    def __init__(self, path):
-        # the source file of the post
-        self.path = path
-        # instantiate these attributes, so they default to None.
-        self.contents = None
-        self.author = None
-        self.email = None
-        self.slug = None
-        # an empty list for tags; this way, if they aren't in the metadata,
-        # it defaults to this.
-        self.tags = []
-        # Read the metadata from this file and update this objects __dict__
-        # with it; this allows the user to have arbitrary, custom fields
-        # further than "title" and "date".
-        # `metadata` also returns `contents`, which is the file contents
-        # sans the metadata
-        meta, contents = metadata(self.path)
-        self.__dict__.update(meta)
-        # get a datetime object from the "date" metadata
-        self.date = datetime.datetime.strptime(self.date, "%Y/%m/%d")
-        # get these to be nice...
-        self.year = self.date.year
-        self.month = self.date.month
-        self.monthname = self.date.strftime("%B")
-        self.day = self.date.day
-        # This is a whitespace-free version of the name, to be used in things
-        # like filenames.
-        if self.slug == None:
-            # if the slug != None, then the user has defined it in the metadata
-            # and we should not override it.
-            self.slug = urllib.quote(self.title.replace(" ", "-"))
-        # this is the relative url for the post, relative from the destination
-        # directory:
-        self.url = os.path.join(str(self.year), str(self.month), self.slug + 
-                ".html")
-        # Interpret the file.
-        suffix = self.path.split(".")[-1]
-        # this is given a StringIO object because interpreters expect
-        # file-like objects. The StringIO object is based on the contents
-        # we read from the file earlier -- i.e., the file without the metadata
-        interpret_filelike(StringIO(contents), self, suffix)
-
-    def close(self):
-        # This is just here so that python doesn't throw up an error when
-        # something else thinks this is a file.
-        pass
-
-    def write(self, s):
-        # instead of writing to disk when this is written to , simply change
-        # the contents attribute.
-        self.contents = s.decode("utf8")
+from .posts import Post
+from cytoplasm.interpreters import interpret
 
 
 class BlogController(cytoplasm.controllers.Controller):
@@ -98,7 +14,7 @@ class BlogController(cytoplasm.controllers.Controller):
         # take the base arguments for a controller and, optinally, the number
         # of posts per page.
         self.posts_per_page = posts_per_page
-    # pass the base arguments to the base controller's __init__
+        # pass the base arguments to the base controller's __init__
         cytoplasm.controllers.Controller.__init__(self, data, destination,
                                                     templates)
 

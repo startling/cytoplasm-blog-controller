@@ -9,14 +9,14 @@ from cytoplasm.interpreters import interpret
 
 
 class BlogController(cytoplasm.controllers.Controller):
-    def __init__(self, data, destination, templates="_templates",
+    def __init__(self, site, data, destination, templates="_templates",
             posts_per_page=10):
         # take the base arguments for a controller and, optinally, the number
         # of posts per page.
         self.posts_per_page = posts_per_page
         # pass the base arguments to the base controller's __init__
-        cytoplasm.controllers.Controller.__init__(self, data, destination,
-                                                    templates)
+        cytoplasm.controllers.Controller.__init__(self, site, data,
+                destination, templates)
 
     def __call__(self):
         # this is a dictionary where the values are lists of Post objects and
@@ -33,7 +33,7 @@ class BlogController(cytoplasm.controllers.Controller):
         chronological_template = self.template("chronological")
         for file in os.listdir(self.data_directory):
             # instantiate the Post object
-            post = Post(os.path.join(self.data_directory, file))
+            post = Post(self, os.path.join(self.data_directory, file))
             # append it to the grand list of posts
             divisions[""].append(post)
             # append it to the list of posts for its year and month.
@@ -93,15 +93,15 @@ class BlogController(cytoplasm.controllers.Controller):
                 # this page
                 p = posts[n * self.posts_per_page:(n + 1) *
                             self.posts_per_page]
-                interpret(chronological_template, name, posts=p, next=next,
-                          previous=prev, total_pages=number, page_number=page_number,
-                          archive=archive)
+                interpret(chronological_template, name, self.site, posts=p,
+                        next=next, previous=prev, total_pages=number,
+                        page_number=page_number, archive=archive)
         # for each of the posts, apply the mako template and write it to a
         # file.
         for post in divisions[""]:
             destination = os.path.join(self.destination_directory, post.url)
             # interpret the post
-            interpret(post_template, destination, post=post)
+            interpret(post_template, destination, self.site, post=post)
         # finally, for each of the templates in the templates/feeds directory,
         # give them the posts.
         feed_dir = os.path.join(self.templates_directory, "feeds")
@@ -113,7 +113,7 @@ class BlogController(cytoplasm.controllers.Controller):
                         ".".join(feed.split(".")[:-1]))
                 # interpret this template, given the list of posts
                 interpret(os.path.join(feed_dir, feed), destination,
-                                                    posts=divisions[""])
+                        self.site, posts=divisions[""])
 
 
 info = {"class": BlogController}

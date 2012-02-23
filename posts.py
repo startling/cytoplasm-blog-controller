@@ -9,7 +9,7 @@ from StringIO import StringIO
 from cytoplasm.interpreters import interpret, interpret_filelike
 
 class Post(object):
-    def __init__(self, path):
+    def __init__(self, controller, path):
         "Initalize a post object given the source file."
         self.path = path
         # initialize these attributes, so they default to none.
@@ -48,7 +48,7 @@ class Post(object):
         # this is given a StringIO object because interpreters expect
         # file-like objects. The StringIO object is based on the contents
         # we read from the file earlier -- i.e., the file without the metadata
-        interpret_filelike(StringIO(contents), self, suffix)
+        interpret_filelike(StringIO(contents), self, controller.site, suffix)
 
     def close(self):
         # This is just here so that python doesn't throw up an error when

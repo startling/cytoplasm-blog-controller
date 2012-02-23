@@ -6,28 +6,23 @@ import re
 import datetime
 import os
 from StringIO import StringIO
+from collections import defaultdict
 from cytoplasm.interpreters import interpret, interpret_filelike
 
 class Post(object):
     def __init__(self, controller, path):
         "Initalize a post object given the source file."
         self.path = path
-        # initialize these attributes, so they default to none.
-        self.contents = None
-        self.author = None
-        self.email = None
-        self.slug = None
+        # a defaultdict of metadata; values default to None
+        self.metadata = defaultdict(lambda: None)
         # initialize the list of tags, so it defaults to [].
-        self.tags = []
-        # Read the metadata from this file and update this objects __dict__
-        # with it; this allows the user to have arbitrary, custom fields
-        # further than "title" and "date".
-        # `metadata` also returns `contents`, which is the file contents
-        # sans the metadata
+        self.metadata["tags"] = []
+        # read the metadata and update the `metadata` attribute with it.
         meta, contents = self._parse_metadata()
-        self.__dict__.update(meta)
+        self.metadata.update(meta)
         # get a datetime object from the "date" metadata
-        self.date = datetime.datetime.strptime(self.date, "%Y/%m/%d")
+        self.date = datetime.datetime.strptime(self.metadata["date"],
+                "%Y/%m/%d")
         # get these to be nice...
         self.year = self.date.year
         self.month = self.date.month
@@ -35,10 +30,10 @@ class Post(object):
         self.day = self.date.day
         # This is a whitespace-free version of the name, to be used in things
         # like filenames.
-        if self.slug == None:
+        if self.metadata["slug"] == None:
             # if the slug != None, then the user has defined it in the metadata
             # and we should not override it.
-            self.slug = urllib.quote(self.title.replace(" ", "-"))
+            self.metadata["slug"] = urllib.quote(self.title.replace(" ", "-"))
         # this is the relative url for the post, relative from the destination
         # directory:
         self.url = os.path.join(str(self.year), str(self.month), self.slug + 
@@ -49,6 +44,10 @@ class Post(object):
         # file-like objects. The StringIO object is based on the contents
         # we read from the file earlier -- i.e., the file without the metadata
         interpret_filelike(StringIO(contents), self, controller.site, suffix)
+
+    def __getattr__(self, name):
+        "If there's no such instance attribute, look in the post metadata."
+        return self.metadata[name]
 
     def close(self):
         # This is just here so that python doesn't throw up an error when

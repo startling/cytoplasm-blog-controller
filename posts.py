@@ -24,7 +24,7 @@ class Post(object):
         # further than "title" and "date".
         # `metadata` also returns `contents`, which is the file contents
         # sans the metadata
-        meta, contents = metadata(self.path)
+        meta, contents = self._parse_metadata()
         self.__dict__.update(meta)
         # get a datetime object from the "date" metadata
         self.date = datetime.datetime.strptime(self.date, "%Y/%m/%d")
@@ -60,28 +60,30 @@ class Post(object):
         # the contents attribute.
         self.contents = s.decode("utf8")
 
-
-def metadata(file):
-    "Read the metadata for file `file` from file.yaml."
-    with open(file, "r") as f:
-        contents = f.read()
-    # get everything that looks like:
-    # some_stuff: thing
-    #
-    # contents
-    separated = re.match(r'(.+?\:.+?)\n\n(.*)', contents, flags=re.DOTALL)
-    # if there's no match, raise an error.
-    if separated == None:
-        raise ControllerError("Post '%s' has no commented metadata." % (file))
-    # otherwise, get yaml data from the first matching group (there should be
-    # only one anyway).
-    meta = yaml.load(separated.group(1))
-    # raise an error if there's no title in the metadata
-    if "title" not in meta.keys():
-        raise ControllerError("Post '%s' doesn't have a title in its metadata."
-                % (file))
-    # raise an error if there's no date in the metadata:
-    if "date" not in meta.keys():
-        raise ControllerError("Post '%s' doesn't have a date in its metadata."
-                % (file))
-    return meta, separated.group(2)
+    def _parse_metadata(self):
+        "Read the metadata for file `self.path` from it's yaml header."
+        with open(self.path, "r") as f:
+            contents = f.read()
+        # get everything that looks like:
+        # some_stuff: thing
+        #
+        # contents
+        separated = re.match(r'(.+?\:.+?)\n\n(.*)', contents, flags=re.DOTALL)
+        # if there's no match, raise an error.
+        if separated == None:
+            raise ControllerError("Post '%s' has no commented metadata."
+                    % (self.path))
+        # otherwise, get yaml data from the first matching group (there should
+        # be only one anyway).
+        meta = yaml.load(separated.group(1))
+        # raise an error if there's no title in the metadata
+        if "title" not in meta.keys():
+            raise ControllerError(
+                    "Post '%s' doesn't have a title in its metadata."
+                    % (self.path))
+        # raise an error if there's no date in the metadata:
+        if "date" not in meta.keys():
+            raise ControllerError(
+                    "Post '%s' doesn't have a date in its metadata."
+                    % (self.path))
+        return meta, separated.group(2)

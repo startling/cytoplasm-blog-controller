@@ -29,8 +29,8 @@
         % endif 
         </author>
     % endif
-        <link href="${url}${post.url}" type="text/html" />
-        <id>${url}${post.url}</id>
+        <link href="${url}/${post.url}" type="text/html" />
+        <id>${url}/${post.url}</id>
         <updated>${isoformat(post.date)}</updated>
         <content type="html"><![CDATA[
 ${post.contents}

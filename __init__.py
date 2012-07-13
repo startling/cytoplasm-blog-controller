@@ -84,6 +84,7 @@ class BlogController(cytoplasm.controllers.Controller):
                     page_number = n + 1
                 else:
                     prev = "%d.html" % (n - 1)
+                    page_number = n + 1
                 # if this isn't the last, next should link to the next page.
                 if n == number - 1:
                     next = None
